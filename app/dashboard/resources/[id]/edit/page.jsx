@@ -61,7 +61,7 @@ export default function EditResourcePage() {
       }
 
       alert(data.message || 'Listing removed successfully');
-      router.push('/resources/my-listings');
+      router.push('/dashboard/resources/my-listings');
     } catch (err) {
       setSubmitError(err.message);
       setDeleting(false);
@@ -151,7 +151,7 @@ export default function EditResourcePage() {
 
       setSubmitSuccess('Resource listing updated successfully! Redirecting...');
       setTimeout(() => {
-        router.push('/resources/my-listings');
+        router.push('/dashboard/resources/my-listings');
       }, 1200);
     } catch (err) {
       setSubmitError(err.message);
@@ -177,7 +177,7 @@ export default function EditResourcePage() {
           {loadError}
         </div>
         <button
-          onClick={() => router.push('/resources/my-listings')}
+          onClick={() => router.push('/dashboard/resources/my-listings')}
           className="btn-woodwrights-primary px-6 py-2.5 text-[11px]"
         >
           Return to My Listings

@@ -110,11 +110,13 @@ export default function DashboardPage() {
             </span>
             <span className="text-[#DDD7CE]">•</span>
             <span className="text-[10px] tracking-[0.18em] uppercase text-[#8A8276] font-medium">
-              {user.role === 'department'
-                ? user.departmentName || 'Academic Department'
-                : user.role === 'admin'
+              {user.role === 'admin'
                 ? 'Institutional Governance'
-                : `Roll No: ${user.collegeId || 'Student'}`}
+                : user.departmentName
+                ? user.departmentName
+                : user.collegeId
+                ? `ID: ${user.collegeId}`
+                : 'Campus Member'}
             </span>
           </div>
 
@@ -123,41 +125,15 @@ export default function DashboardPage() {
           </h1>
 
           <p className="text-[13px] sm:text-[14px] text-[#615C53] max-w-2xl font-light">
-            {user.role === 'student' &&
-              'Monitor your active resource reservations, review physical pickup coordinates, and track personal expenditure avoided.'}
-            {user.role === 'department' &&
-              'Review student equipment requests, monitor laboratory surplus allocation, and certify physical handovers.'}
-            {user.role === 'admin' &&
-              'High-level audit metrics, resource velocity across campus sectors, and cross-departmental impact.'}
+            {user.role === 'admin'
+              ? 'High-level audit metrics, resource velocity across campus sectors, and cross-departmental impact.'
+              : 'Monitor your resource reservations, manage listed inventory, review physical pickup coordinates, and certify campus handovers.'}
           </p>
         </div>
 
         {/* Global Quick Action based on role */}
         <div className="flex flex-wrap items-center gap-3">
-          {user.role === 'student' && (
-            <>
-              <Link href="/" className="btn-woodwrights-outline px-4 py-2.5">
-                Browse Catalogue
-              </Link>
-              <Link href="/resources/new" className="btn-woodwrights-primary px-4 py-2.5">
-                + List Peer Item
-              </Link>
-            </>
-          )}
-
-          {user.role === 'department' && (
-            <>
-              <Link href="/resources/bulk-import" className="btn-woodwrights-outline px-4 py-2.5 flex items-center space-x-2">
-                <UploadCloud className="w-3.5 h-3.5" />
-                <span>Bulk CSV Import</span>
-              </Link>
-              <Link href="/resources/new" className="btn-woodwrights-primary px-4 py-2.5">
-                + Post Lab Resource
-              </Link>
-            </>
-          )}
-
-          {user.role === 'admin' && (
+          {user.role === 'admin' ? (
             <>
               <Link href="/admin" className="btn-woodwrights-outline px-4 py-2.5 flex items-center space-x-2">
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -165,6 +141,19 @@ export default function DashboardPage() {
               </Link>
               <Link href="/impact" className="btn-woodwrights-primary px-4 py-2.5">
                 Full Impact Ledger
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/catalogue" className="btn-woodwrights-outline px-4 py-2.5">
+                Browse Catalogue
+              </Link>
+              <Link href="/dashboard/resources/bulk-import" className="btn-woodwrights-outline px-4 py-2.5 flex items-center space-x-2">
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Bulk Import</span>
+              </Link>
+              <Link href="/dashboard/resources/new" className="btn-woodwrights-primary px-4 py-2.5">
+                + List Resource
               </Link>
             </>
           )}
@@ -225,19 +214,23 @@ export default function DashboardPage() {
       )}
 
       {/* Role-Specific Dashboard Views */}
-      {data?.role === 'student' && <StudentDashboardView data={data} />}
-      {data?.role === 'department' && <DepartmentDashboardView data={data} />}
-      {data?.role === 'admin' && <AdminDashboardView data={data} />}
+      {data?.role === 'admin' ? (
+        <AdminDashboardView data={data} />
+      ) : (
+        <UserDashboardView data={data} />
+      )}
     </div>
   );
 }
 
 // -------------------------------------------------------------
-// STUDENT VIEW
+// CAMPUS MEMBER (USER) VIEW
 // -------------------------------------------------------------
-function StudentDashboardView({ data }) {
+function UserDashboardView({ data }) {
   const kpis = data.kpis || {};
   const recentRequests = data.recentRequests || [];
+  const pendingQueue = data.pendingQueue || [];
+  const recentCompleted = data.recentCompleted || [];
 
   return (
     <div className="space-y-12">
@@ -245,7 +238,7 @@ function StudentDashboardView({ data }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-2">
           <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
-            Active Requests
+            Active Requisitions
           </span>
           <div className="font-editorial text-3xl sm:text-4xl text-[#1C1B18]">
             {kpis.activeRequestsCount || 0}
@@ -257,185 +250,10 @@ function StudentDashboardView({ data }) {
 
         <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-2">
           <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
-            Items Received
-          </span>
-          <div className="font-editorial text-3xl sm:text-4xl text-[#2F442F]">
-            {kpis.itemsReceivedCount || 0}
-          </div>
-          <div className="text-[11px] text-[#6E675D]">
-            Transfers verified and collected
-          </div>
-        </div>
-
-        <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-2">
-          <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
-            Personal Savings
+            My Listed Inventory
           </span>
           <div className="font-editorial text-3xl sm:text-4xl text-[#1C1B18]">
-            ₹{(kpis.savingsINR || 0).toLocaleString()}
-          </div>
-          <div className="text-[11px] text-[#6E675D]">
-            Estimated procurement cost avoided
-          </div>
-        </div>
-
-        <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-2">
-          <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
-            CO₂ Diverted
-          </span>
-          <div className="font-editorial text-3xl sm:text-4xl text-[#8F5338]">
-            {(kpis.carbonKg || 0).toFixed(1)} <span className="text-xl font-sans font-light">kg</span>
-          </div>
-          <div className="text-[11px] text-[#6E675D]">
-            Emissions averted via LCA benchmarking
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid: Recent Requests & Fast Jump Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column (2 spans): My Recent Requests */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#E8E3DA] pb-3">
-            <h3 className="font-editorial text-2xl text-[#1C1B18]">
-              My Request Pipeline
-            </h3>
-            <Link
-              href="/requests/my-requests"
-              className="text-[11px] tracking-[0.14em] uppercase text-[#8A8276] hover:text-[#1C1B18] transition-colors font-medium flex items-center space-x-1"
-            >
-              <span>View All</span>
-              <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-
-          {recentRequests.length === 0 ? (
-            <div className="bg-white border border-[#E8E3DA] p-8 text-center space-y-3">
-              <p className="text-[13px] text-[#7A746B]">
-                You have not requested any campus equipment or study materials yet.
-              </p>
-              <Link href="/" className="btn-woodwrights-primary px-5 py-2 inline-block">
-                Browse Campus Catalogue
-              </Link>
-            </div>
-          ) : (
-            <div className="bg-white border border-[#E8E3DA] shadow-wood divide-y divide-[#E8E3DA]">
-              {recentRequests.map((req) => (
-                <div key={req._id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-[13px] font-semibold text-[#1C1B18]">
-                        {req.resource?.title || 'Resource'}
-                      </span>
-                      <StatusBadge status={req.status} />
-                    </div>
-                    <div className="text-[12px] text-[#6E675D]">
-                      Custodian: {req.resource?.owner?.departmentName || req.resource?.owner?.name || 'Department'} • Location: {req.resource?.location || 'Campus'}
-                    </div>
-                    <div className="text-[11px] text-[#8A8276]">
-                      Requested Qty: {req.requestedQuantity} • {new Date(req.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  <div className="sm:text-right">
-                    <Link
-                      href="/requests/my-requests"
-                      className="btn-woodwrights-outline px-3 py-1.5 inline-block text-[10px]"
-                    >
-                      Track Details
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Peer Sharing & Shortcuts */}
-        <div className="space-y-6">
-          {/* Peer Sharing Card */}
-          <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-4">
-            <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold block">
-              Peer-To-Peer Stewardship
-            </span>
-            <h4 className="font-editorial text-xl text-[#1C1B18]">
-              Pass On Surplus Study Material
-            </h4>
-            <p className="text-[12px] text-[#6E675D] leading-relaxed">
-              Have old semester textbooks, lab kits, or electronic peripherals? List them for peers rather than letting them gather dust.
-            </p>
-            <div className="pt-1 flex items-center justify-between border-t border-[#F2ECE1]">
-              <span className="text-[12px] text-[#1C1B18] font-medium">
-                {kpis.myListingsCount || 0} Listed Items
-              </span>
-              <Link
-                href="/resources/my-listings"
-                className="text-[10px] tracking-[0.14em] uppercase text-[#8F5338] font-semibold hover:underline"
-              >
-                Manage Listings
-              </Link>
-            </div>
-          </div>
-
-          {/* Quick Links Card */}
-          <div className="bg-[#FAF8F5] border border-[#E8E3DA] p-6 space-y-3">
-            <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold block">
-              Quick Shortcuts
-            </span>
-            <ul className="space-y-2 text-[12px]">
-              <li>
-                <Link
-                  href="/requests/incoming"
-                  className="flex items-center justify-between py-1.5 text-[#4A453D] hover:text-[#1C1B18] border-b border-[#E8E3DA]"
-                >
-                  <span>Inbound Peer Requests</span>
-                  <ArrowRight className="w-3 h-3 text-[#8A8276]" />
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/impact"
-                  className="flex items-center justify-between py-1.5 text-[#4A453D] hover:text-[#1C1B18] border-b border-[#E8E3DA]"
-                >
-                  <span>Institutional Impact Ledger</span>
-                  <ArrowRight className="w-3 h-3 text-[#8A8276]" />
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/resources/new"
-                  className="flex items-center justify-between py-1.5 text-[#4A453D] hover:text-[#1C1B18]"
-                >
-                  <span>Post New Peer Listing</span>
-                  <ArrowRight className="w-3 h-3 text-[#8A8276]" />
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// -------------------------------------------------------------
-// DEPARTMENT VIEW
-// -------------------------------------------------------------
-function DepartmentDashboardView({ data }) {
-  const kpis = data.kpis || {};
-  const pendingQueue = data.pendingQueue || [];
-  const recentCompleted = data.recentCompleted || [];
-
-  return (
-    <div className="space-y-12">
-      {/* Top Metric Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-2">
-          <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
-            Lab Inventory
-          </span>
-          <div className="font-editorial text-3xl sm:text-4xl text-[#1C1B18]">
-            {kpis.totalListings || 0}
+            {kpis.myListingsCount || 0}
           </div>
           <div className="text-[11px] text-[#6E675D]">
             {kpis.availableUnits || 0} units currently unreserved
@@ -444,112 +262,158 @@ function DepartmentDashboardView({ data }) {
 
         <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-2">
           <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
-            Pending Reviews
-          </span>
-          <div className="font-editorial text-3xl sm:text-4xl text-[#8F5338]">
-            {kpis.pendingReviewCount || 0}
-          </div>
-          <div className="text-[11px] text-[#6E675D]">
-            Student applications awaiting decision
-          </div>
-        </div>
-
-        <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-2">
-          <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
-            Completed Transfers
+            Transfers Completed
           </span>
           <div className="font-editorial text-3xl sm:text-4xl text-[#2F442F]">
-            {kpis.unitsReusedCount || 0} <span className="text-xl font-sans font-light">units</span>
+            {kpis.completedTransfersCount || 0}
           </div>
           <div className="text-[11px] text-[#6E675D]">
-            Mutual custody handovers verified
+            {kpis.itemsReceivedCount || 0} collected • {kpis.itemsDonatedCount || 0} passed on
           </div>
         </div>
 
         <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-2">
           <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
-            Budget Savings Avoided
+            Cost & CO₂ Diverted
           </span>
-          <div className="font-editorial text-3xl sm:text-4xl text-[#1C1B18]">
+          <div className="font-editorial text-3xl sm:text-4xl text-[#8F5338]">
             ₹{(kpis.savingsINR || 0).toLocaleString()}
           </div>
           <div className="text-[11px] text-[#6E675D]">
-            {(kpis.carbonKg || 0).toFixed(1)} kg CO₂ averted
+            {(kpis.carbonKg || 0).toFixed(1)} <span className="font-sans font-light">kg</span> CO₂ avoided
           </div>
         </div>
       </div>
 
-      {/* Main Section: Pending Requests Awaiting Action */}
+      {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#E8E3DA] pb-3">
-            <h3 className="font-editorial text-2xl text-[#1C1B18]">
-              Inbound Allocation Queue
-            </h3>
-            <Link
-              href="/requests/incoming"
-              className="text-[11px] tracking-[0.14em] uppercase text-[#8A8276] hover:text-[#1C1B18] transition-colors font-medium flex items-center space-x-1"
-            >
-              <span>Manage In Review</span>
-              <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-
-          {pendingQueue.length === 0 ? (
-            <div className="bg-white border border-[#E8E3DA] p-8 text-center space-y-2">
-              <p className="text-[13px] text-[#7A746B]">
-                All incoming student requests have been adjudicated. No pending items.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-white border border-[#E8E3DA] shadow-wood divide-y divide-[#E8E3DA]">
-              {pendingQueue.map((req) => (
-                <div key={req._id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-[13px] font-semibold text-[#1C1B18]">
-                        {req.resource?.title || 'Resource'}
-                      </span>
-                      <StatusBadge status={req.status} />
-                    </div>
-                    <div className="text-[12px] text-[#6E675D]">
-                      Applicant: {req.requester?.name} ({req.requester?.collegeId || req.requester?.email}) • Qty: {req.requestedQuantity}
-                    </div>
-                    <div className="text-[11px] text-[#8A8276] italic">
-                      Purpose: "{req.purpose || 'Academic project'}"
-                    </div>
-                  </div>
-
-                  <div className="sm:text-right">
-                    <Link
-                      href="/requests/incoming"
-                      className="btn-woodwrights-primary px-3 py-1.5 inline-block text-[10px]"
-                    >
-                      Adjudicate Request
-                    </Link>
-                  </div>
+        {/* Left Column (2 spans) */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Section 1: Inbound Requests for My Listed Items */}
+          {pendingQueue.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-[#E8E3DA] pb-3">
+                <div className="flex items-center space-x-2">
+                  <span className="w-2 h-2 rounded-full bg-[#8F5338]" />
+                  <h3 className="font-editorial text-2xl text-[#1C1B18]">
+                    Inbound Requests for My Items
+                  </h3>
                 </div>
-              ))}
+                <Link
+                  href="/dashboard/requests/incoming"
+                  className="text-[11px] tracking-[0.14em] uppercase text-[#8A8276] hover:text-[#1C1B18] transition-colors font-medium flex items-center space-x-1"
+                >
+                  <span>Review All ({pendingQueue.length})</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+
+              <div className="bg-white border border-[#E8E3DA] shadow-wood divide-y divide-[#E8E3DA]">
+                {pendingQueue.map((req) => (
+                  <div key={req._id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="text-[13px] font-semibold text-[#1C1B18]">
+                        {req.resource?.title || 'Resource'} ({req.requestedQuantity} requested)
+                      </div>
+                      <div className="text-[12px] text-[#6E675D]">
+                        Applicant: {req.requester?.name} ({req.requester?.departmentName || req.requester?.collegeId || 'Member'})
+                      </div>
+                      <p className="text-[11px] text-[#8A8276] italic line-clamp-1">
+                        Purpose: &ldquo;{req.purpose}&rdquo;
+                      </p>
+                    </div>
+
+                    <div className="sm:text-right flex-shrink-0">
+                      <Link
+                        href="/dashboard/requests/incoming"
+                        className="btn-woodwrights-primary px-3 py-1.5 inline-block text-[10px]"
+                      >
+                        Adjudicate Request
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Recent Handover Ledger */}
-          <div className="pt-6 space-y-4">
-            <h3 className="font-editorial text-2xl text-[#1C1B18] border-b border-[#E8E3DA] pb-3">
-              Recent Verified Department Transfers
-            </h3>
+          {/* Section 2: My Outbound Requisition Pipeline */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E8E3DA] pb-3">
+              <h3 className="font-editorial text-2xl text-[#1C1B18]">
+                My Requisition Pipeline
+              </h3>
+              <Link
+                href="/dashboard/requests/my-requests"
+                className="text-[11px] tracking-[0.14em] uppercase text-[#8A8276] hover:text-[#1C1B18] transition-colors font-medium flex items-center space-x-1"
+              >
+                <span>View All</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
 
-            {recentCompleted.length === 0 ? (
-              <div className="bg-white border border-[#E8E3DA] p-6 text-center text-[13px] text-[#7A746B]">
-                No completed transfers on record yet.
+            {recentRequests.length === 0 ? (
+              <div className="bg-white border border-[#E8E3DA] p-8 text-center space-y-3">
+                <p className="text-[13px] text-[#7A746B]">
+                  You have not requested any campus equipment or study materials yet.
+                </p>
+                <Link href="/catalogue" className="btn-woodwrights-primary px-5 py-2 inline-block">
+                  Browse Campus Catalogue
+                </Link>
               </div>
             ) : (
+              <div className="bg-white border border-[#E8E3DA] shadow-wood divide-y divide-[#E8E3DA]">
+                {recentRequests.map((req) => (
+                  <div key={req._id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[13px] font-semibold text-[#1C1B18]">
+                          {req.resource?.title || 'Resource'}
+                        </span>
+                        <StatusBadge status={req.status} />
+                      </div>
+                      <div className="text-[12px] text-[#6E675D]">
+                        Custodian: {req.resource?.owner?.departmentName || req.resource?.owner?.name || 'Custodian'} • Location: {req.resource?.location || 'Campus'}
+                      </div>
+                      <div className="text-[11px] text-[#8A8276]">
+                        Requested Qty: {req.requestedQuantity} • {new Date(req.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    <div className="sm:text-right">
+                      <Link
+                        href="/dashboard/requests/my-requests"
+                        className="btn-woodwrights-outline px-3 py-1.5 inline-block text-[10px]"
+                      >
+                        Track Details
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section 3: Recent Verified Completed Transfers */}
+          {recentCompleted.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-[#E8E3DA] pb-3">
+                <h3 className="font-editorial text-2xl text-[#1C1B18]">
+                  Recent Completed Transfers
+                </h3>
+                <span className="text-[11px] tracking-[0.14em] uppercase text-[#8A8276] font-medium">
+                  Verified Custody
+                </span>
+              </div>
+
               <div className="bg-white border border-[#E8E3DA] shadow-wood divide-y divide-[#E8E3DA]">
                 {recentCompleted.map((t) => (
                   <div key={t._id} className="p-4 flex items-center justify-between text-[12px]">
                     <div>
                       <span className="font-medium text-[#1C1B18]">{t.resource?.title}</span>
-                      <span className="text-[#8A8276] ml-2">({t.quantityTransferred} units to {t.receiver?.name})</span>
+                      <span className="text-[#8A8276] ml-2">
+                        ({t.quantityTransferred} units • {t.receiver?.name || 'Recipient'})
+                      </span>
                     </div>
                     <div className="text-[#2F442F] font-semibold">
                       ₹{(t.impact?.estimatedSavingsINR || 0).toLocaleString()} Saved
@@ -557,59 +421,78 @@ function DepartmentDashboardView({ data }) {
                   </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Right Column: Lab Surplus Operations */}
+        {/* Right Column (1 span) */}
         <div className="space-y-6">
+          {/* Quick Operations Card */}
           <div className="bg-white border border-[#E8E3DA] p-6 shadow-wood space-y-4">
             <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold block">
-              Batch Ingestion Tool
+              Surplus Operations
             </span>
             <h4 className="font-editorial text-xl text-[#1C1B18]">
-              Lab Surplus Bulk Importer
+              List & Share Equipment
             </h4>
             <p className="text-[12px] text-[#6E675D] leading-relaxed">
-              Have 10+ lab items, spare computer peripherals, or test components? Import them all in one click using the institutional CSV template.
+              Have unused textbooks, laboratory apparatus, computer monitors, or furniture? Register them for campus reallocation.
             </p>
-            <Link
-              href="/resources/bulk-import"
-              className="btn-woodwrights-outline w-full py-2.5 text-center block text-[10px]"
-            >
-              Open Bulk Importer
-            </Link>
+            <div className="space-y-2 pt-2">
+              <Link
+                href="/dashboard/resources/new"
+                className="btn-woodwrights-primary w-full py-2.5 text-center block text-[10px]"
+              >
+                + Register Single Resource
+              </Link>
+              <Link
+                href="/dashboard/resources/bulk-import"
+                className="btn-woodwrights-outline w-full py-2.5 text-center block text-[10px]"
+              >
+                Upload Spreadsheet (Bulk CSV)
+              </Link>
+            </div>
           </div>
 
+          {/* Member Controls Card */}
           <div className="bg-[#FAF8F5] border border-[#E8E3DA] p-6 space-y-3">
             <span className="text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold block">
-              Department Controls
+              Workspace Navigation
             </span>
             <ul className="space-y-2 text-[12px]">
               <li>
                 <Link
-                  href="/resources/my-listings"
+                  href="/dashboard/resources/my-listings"
                   className="flex items-center justify-between py-1.5 text-[#4A453D] hover:text-[#1C1B18] border-b border-[#E8E3DA]"
                 >
-                  <span>My Active Inventory</span>
+                  <span>My Active Listings ({kpis.myListingsCount || 0})</span>
                   <ArrowRight className="w-3 h-3 text-[#8A8276]" />
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/requests/incoming"
+                  href="/dashboard/requests/incoming"
                   className="flex items-center justify-between py-1.5 text-[#4A453D] hover:text-[#1C1B18] border-b border-[#E8E3DA]"
                 >
-                  <span>Handover Verification Slips</span>
+                  <span>Incoming Claim Review</span>
                   <ArrowRight className="w-3 h-3 text-[#8A8276]" />
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/resources/new"
+                  href="/dashboard/requests/my-requests"
+                  className="flex items-center justify-between py-1.5 text-[#4A453D] hover:text-[#1C1B18] border-b border-[#E8E3DA]"
+                >
+                  <span>My Outbound Requests</span>
+                  <ArrowRight className="w-3 h-3 text-[#8A8276]" />
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/impact"
                   className="flex items-center justify-between py-1.5 text-[#4A453D] hover:text-[#1C1B18]"
                 >
-                  <span>Add Single Lab Item</span>
+                  <span>Campus Circularity Ledger</span>
                   <ArrowRight className="w-3 h-3 text-[#8A8276]" />
                 </Link>
               </li>
@@ -641,7 +524,7 @@ function AdminDashboardView({ data }) {
             {kpis.totalUsers || 0}
           </div>
           <div className="text-[11px] text-[#6E675D]">
-            {kpis.studentsCount || 0} Students • {kpis.departmentsCount || 0} Depts
+            {kpis.usersCount || kpis.totalUsers || 0} Members • {kpis.adminsCount || 1} Admins
           </div>
         </div>
 

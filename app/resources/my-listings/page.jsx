@@ -29,15 +29,37 @@ export default function MyListingsPage() {
     fetchListings();
   }, []);
 
-  const handleArchive = async (id) => {
-    if (!confirm('Are you sure you want to archive this resource listing?')) return;
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this listing?')) return;
     try {
       const res = await fetch(`/api/resources/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchListings();
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to delete listing');
       }
+      alert(data.message || 'Listing removed successfully');
+      fetchListings();
     } catch (err) {
-      alert('Failed to archive resource');
+      alert(err.message || 'Failed to delete resource');
+    }
+  };
+
+  const handleUnarchive = async (id) => {
+    if (!confirm('Do you want to unarchive this listing and restore it to available catalogue stock?')) return;
+    try {
+      const res = await fetch(`/api/resources/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unarchive' }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to unarchive listing');
+      }
+      alert(data.message || 'Listing restored to available catalogue stock');
+      fetchListings();
+    } catch (err) {
+      alert(err.message || 'Failed to unarchive resource');
     }
   };
 
@@ -143,14 +165,21 @@ export default function MyListingsPage() {
                     View Applicants
                   </Link>
 
-                  {item.status !== 'archived' && (
+                  {item.status === 'archived' && (
                     <button
-                      onClick={() => handleArchive(item._id)}
-                      className="px-3 py-2 text-[10px] tracking-[0.14em] uppercase text-[#8F5338] hover:text-[#5E2B15] transition-colors"
+                      onClick={() => handleUnarchive(item._id)}
+                      className="border border-[#2F442F] text-[#2F442F] hover:bg-[#EBF2EB] hover:border-[#1E301E] px-4 py-2 text-[10px] tracking-[0.14em] uppercase font-medium transition-colors"
                     >
-                      Archive
+                      Unarchive
                     </button>
                   )}
+
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="border border-[#E8CACA] text-[#803333] hover:bg-[#FCE8E8] hover:border-[#803333] px-4 py-2 text-[10px] tracking-[0.14em] uppercase font-medium transition-colors"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             );

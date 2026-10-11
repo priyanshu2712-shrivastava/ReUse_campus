@@ -24,8 +24,49 @@ export default function EditResourcePage() {
   const [imageUrl, setImageUrl] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [status, setStatus] = useState('available');
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState('');
+
+  const handleUnarchiveNow = async () => {
+    try {
+      const res = await fetch(`/api/resources/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unarchive' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to unarchive listing');
+      setStatus('available');
+      alert(data.message || 'Listing unarchived and restored to catalogue!');
+    } catch (err) {
+      setSubmitError(err.message);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this listing?')) return;
+
+    setDeleting(true);
+    setSubmitError('');
+
+    try {
+      const res = await fetch(`/api/resources/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to delete listing');
+      }
+
+      alert(data.message || 'Listing removed successfully');
+      router.push('/resources/my-listings');
+    } catch (err) {
+      setSubmitError(err.message);
+      setDeleting(false);
+    }
+  };
 
   const activeCategoryConfig = CAMPUS_CATEGORIES.find((c) => c.id === category) || CAMPUS_CATEGORIES[0];
 
@@ -61,6 +102,7 @@ export default function EditResourcePage() {
         setLocation(r.location || '');
         setPickupInstructions(r.pickupInstructions || '');
         setImageUrl(r.imageUrl || '');
+        setStatus(r.status || 'available');
       } catch (err) {
         setLoadError(err.message);
       } finally {
@@ -98,6 +140,7 @@ export default function EditResourcePage() {
           location: location.trim(),
           pickupInstructions: pickupInstructions ? pickupInstructions.trim() : '',
           imageUrl: imageUrl ? imageUrl.trim() : '',
+          status: 'available',
         }),
       });
 
@@ -172,6 +215,26 @@ export default function EditResourcePage() {
       {submitSuccess && (
         <div className="p-4 bg-[#E8F5E9] text-[#2E7D32] text-[13px] border border-[#C8E6C9]">
           {submitSuccess}
+        </div>
+      )}
+
+      {status === 'archived' && (
+        <div className="p-4 bg-[#FAF4E6] border border-[#EDE0BE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-wood">
+          <div className="space-y-1">
+            <div className="text-[11px] font-bold text-[#7A642B] tracking-[0.16em] uppercase">
+              Notice: This Listing is Currently Archived
+            </div>
+            <p className="text-[12px] text-[#6E675D]">
+              This resource is hidden from the campus catalogue. Saving updates will automatically unarchive and restore it to available catalogue stock.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleUnarchiveNow}
+            className="border border-[#2F442F] text-[#2F442F] hover:bg-[#EBF2EB] px-4 py-2 text-[10px] tracking-[0.14em] uppercase font-semibold transition-colors self-start sm:self-auto whitespace-nowrap"
+          >
+            Unarchive Now
+          </button>
         </div>
       )}
 
@@ -328,21 +391,33 @@ export default function EditResourcePage() {
         </div>
 
         {/* Submit Actions */}
-        <div className="pt-8 border-t border-[#E8E3DA] flex items-center justify-end space-x-4">
+        <div className="pt-8 border-t border-[#E8E3DA] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button
             type="button"
-            onClick={() => router.back()}
-            className="btn-woodwrights-outline px-6 py-3"
+            disabled={deleting || submitting}
+            onClick={handleDelete}
+            className="px-5 py-3 text-[11px] tracking-[0.14em] uppercase font-semibold text-[#803333] border border-[#E8CACA] hover:bg-[#FCE8E8] transition-colors disabled:opacity-50 text-center"
           >
-            Cancel
+            {deleting ? 'Deleting...' : 'Delete Listing'}
           </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="btn-woodwrights-primary px-8 py-3 disabled:opacity-50"
-          >
-            {submitting ? 'Updating Resource...' : 'Save & Update Listing'}
-          </button>
+
+          <div className="flex items-center space-x-4 self-end sm:self-auto">
+            <button
+              type="button"
+              disabled={deleting || submitting}
+              onClick={() => router.back()}
+              className="btn-woodwrights-outline px-6 py-3"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || deleting}
+              className="btn-woodwrights-primary px-8 py-3 disabled:opacity-50"
+            >
+              {submitting ? 'Updating Resource...' : 'Save & Update Listing'}
+            </button>
+          </div>
         </div>
       </form>
     </div>

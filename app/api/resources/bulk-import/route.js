@@ -72,7 +72,7 @@ export async function POST(request) {
         pickupInstructions: (item.pickupInstructions || 'Coordinate directly upon approval.').trim().slice(0, 300),
         imageUrl: item.imageUrl || defaultImages[category] || defaultImages.other,
         owner: user._id,
-        ownerRole: user.role,
+        ownerRole: user.role === 'admin' ? 'admin' : 'user',
         status: 'available',
       };
     });

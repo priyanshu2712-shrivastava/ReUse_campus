@@ -33,7 +33,11 @@ export async function GET(request) {
     }
 
     if (ownerRole && ownerRole !== 'all') {
-      query.ownerRole = ownerRole;
+      if (['student', 'department', 'user'].includes(ownerRole)) {
+        query.ownerRole = 'user';
+      } else if (ownerRole === 'admin') {
+        query.ownerRole = 'admin';
+      }
     }
 
     if (location) {
@@ -112,7 +116,7 @@ export async function POST(request) {
       pickupInstructions: pickupInstructions ? pickupInstructions.trim() : 'Coordinate directly upon approval.',
       imageUrl: imageUrl ? imageUrl.trim() : '',
       owner: user._id,
-      ownerRole: user.role,
+      ownerRole: (user.role === 'admin' || body.ownerRole === 'admin') ? 'admin' : 'user',
       status: 'available',
     });
 

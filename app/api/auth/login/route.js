@@ -40,6 +40,12 @@ export async function POST(request) {
       );
     }
 
+    // Seamlessly migrate legacy roles ('student', 'department') to 'user'
+    if (user.role && !['user', 'admin'].includes(user.role)) {
+      user.role = 'user';
+      await User.updateOne({ _id: user._id }, { $set: { role: 'user' } }).catch(() => {});
+    }
+
     const token = signToken({
       userId: user._id.toString(),
       role: user.role,

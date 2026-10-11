@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || '/dashboard';
   const { user, login } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -16,9 +18,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      router.push(redirectUrl);
     }
-  }, [user, router]);
+  }, [user, router, redirectUrl]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push('/dashboard');
+      router.push(redirectUrl);
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {
@@ -136,5 +138,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-md mx-auto py-24 text-center text-[#8A8276] font-editorial text-xl italic">
+          Loading sign in gateway...
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

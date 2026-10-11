@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import ImageUpload from '@/components/ImageUpload';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -293,18 +294,11 @@ export default function NewResourcePage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-[11px] tracking-[0.14em] uppercase text-[#6B655C] mb-1">
-                Item Image URL (Optional)
-              </label>
-              <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://... (Leave blank to use default category photography)"
-                className="w-full bg-white border border-[#E8E3DA] px-4 py-3 text-[14px] text-[#1C1B18] focus:outline-none focus:border-[#1C1B18]"
-              />
-            </div>
+<ImageUpload
+              value={imageUrl}
+              onChange={setImageUrl}
+              label="Item Photography (Direct Cloud & S3 Upload)"
+            />
           </div>
         </div>
 

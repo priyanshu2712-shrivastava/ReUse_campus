@@ -43,7 +43,7 @@ export default function ResourceDetailsPage() {
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
-      router.push('/login');
+      router.push(`/login?redirect=/dashboard/resources/${id}`);
       return;
     }
 

@@ -124,7 +124,7 @@ export default function BulkImportPage() {
           Catalogue
         </Link>
         <span>/</span>
-        <Link href="/resources/my-listings" className="hover:text-[#1C1B18] transition-colors">
+        <Link href="/dashboard/resources/my-listings" className="hover:text-[#1C1B18] transition-colors">
           Inventory
         </Link>
         <span>/</span>
@@ -159,7 +159,7 @@ export default function BulkImportPage() {
           </p>
           <div className="pt-2 flex flex-wrap gap-4">
             <Link
-              href="/resources/my-listings"
+              href="/dashboard/resources/my-listings"
               className="btn-woodwrights-primary px-6 py-2.5 text-[11px]"
             >
               View In My Inventory →

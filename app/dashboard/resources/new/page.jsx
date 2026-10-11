@@ -81,7 +81,7 @@ export default function NewResourcePage() {
         throw new Error(data.error || 'Failed to list resource');
       }
 
-      router.push('/resources/my-listings');
+      router.push('/dashboard/resources/my-listings');
     } catch (err) {
       setError(err.message);
     } finally {

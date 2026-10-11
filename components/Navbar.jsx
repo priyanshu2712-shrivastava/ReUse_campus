@@ -83,42 +83,40 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  href="/requests/my-requests"
+                  href="/dashboard/requests/my-requests"
                   className={`text-[11px] tracking-[0.16em] uppercase font-medium transition-colors ${
-                    isActive('/requests/my-requests') ? 'text-[#1C1B18] border-b border-[#1C1B18] pb-1' : 'text-[#6B655C] hover:text-[#1C1B18]'
+                    isActive('/dashboard/requests/my-requests') ? 'text-[#1C1B18] border-b border-[#1C1B18] pb-1' : 'text-[#6B655C] hover:text-[#1C1B18]'
                   }`}
                 >
                   My Requests
                 </Link>
 
                 <Link
-                  href="/requests/incoming"
+                  href="/dashboard/requests/incoming"
                   className={`text-[11px] tracking-[0.16em] uppercase font-medium transition-colors ${
-                    isActive('/requests/incoming') ? 'text-[#1C1B18] border-b border-[#1C1B18] pb-1' : 'text-[#6B655C] hover:text-[#1C1B18]'
+                    isActive('/dashboard/requests/incoming') ? 'text-[#1C1B18] border-b border-[#1C1B18] pb-1' : 'text-[#6B655C] hover:text-[#1C1B18]'
                   }`}
                 >
                   Incoming Review
                 </Link>
 
                 <Link
-                  href="/resources/my-listings"
+                  href="/dashboard/resources/my-listings"
                   className={`text-[11px] tracking-[0.16em] uppercase font-medium transition-colors ${
-                    isActive('/resources/my-listings') ? 'text-[#1C1B18] border-b border-[#1C1B18] pb-1' : 'text-[#6B655C] hover:text-[#1C1B18]'
+                    isActive('/dashboard/resources/my-listings') ? 'text-[#1C1B18] border-b border-[#1C1B18] pb-1' : 'text-[#6B655C] hover:text-[#1C1B18]'
                   }`}
                 >
                   My Inventory
                 </Link>
 
-                {(user?.role === 'department' || user?.role === 'admin') && (
-                  <Link
-                    href="/resources/bulk-import"
-                    className={`text-[11px] tracking-[0.16em] uppercase font-medium transition-colors ${
-                      isActive('/resources/bulk-import') ? 'text-[#1C1B18] border-b border-[#1C1B18] pb-1' : 'text-[#6B655C] hover:text-[#1C1B18]'
-                    }`}
-                  >
-                    Bulk Import
-                  </Link>
-                )}
+                <Link
+                  href="/dashboard/resources/bulk-import"
+                  className={`text-[11px] tracking-[0.16em] uppercase font-medium transition-colors ${
+                    isActive('/dashboard/resources/bulk-import') ? 'text-[#1C1B18] border-b border-[#1C1B18] pb-1' : 'text-[#6B655C] hover:text-[#1C1B18]'
+                  }`}
+                >
+                  Bulk Import
+                </Link>
               </>
             )}
 

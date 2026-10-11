@@ -14,21 +14,20 @@ export default function Sidebar() {
     toggleSidebar,
     isMobileOpen,
     closeMobileSidebar,
-    activeTab,
-    setActiveTab,
   } = useSidebar();
 
   if (!user) {
     return null;
   }
 
-  const isDashboard = pathname === '/dashboard';
-  const isActiveRoute = (path) => pathname === path;
+  const isActiveRoute = (path) => {
+    if (path === '/dashboard') return pathname === '/dashboard';
+    return pathname.startsWith(path);
+  };
 
   const subnavItems = [
     {
       name: 'Overview',
-      tabKey: 'overview',
       href: '/dashboard',
       badge: 'Hub',
       icon: (
@@ -49,8 +48,7 @@ export default function Sidebar() {
     },
     {
       name: 'My Requests',
-      tabKey: 'requests',
-      href: '/dashboard?tab=requests',
+      href: '/dashboard/requests/my-requests',
       badge: 'Requisitions',
       icon: (
         <svg
@@ -70,8 +68,7 @@ export default function Sidebar() {
     },
     {
       name: 'Incoming Review',
-      tabKey: 'incoming',
-      href: '/dashboard?tab=incoming',
+      href: '/dashboard/requests/incoming',
       badge: 'Review',
       icon: (
         <svg
@@ -91,8 +88,7 @@ export default function Sidebar() {
     },
     {
       name: 'My Inventory',
-      tabKey: 'inventory',
-      href: '/dashboard?tab=inventory',
+      href: '/dashboard/resources/my-listings',
       badge: 'Listings',
       icon: (
         <svg
@@ -110,13 +106,28 @@ export default function Sidebar() {
         </svg>
       ),
     },
+    {
+      name: 'List Resource',
+      href: '/dashboard/resources/new',
+      badge: 'New',
+      icon: (
+        <svg
+          className="w-4 h-4 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+    },
   ];
 
   if (user.role === 'admin') {
     subnavItems.push({
       name: 'Governance',
-      tabKey: 'governance',
-      href: '/dashboard?tab=governance',
+      href: '/admin',
       badge: 'Admin',
       icon: (
         <svg
@@ -236,10 +247,10 @@ export default function Sidebar() {
                   </div>
                 </div>
 
-                {/* Primary Quick Action Button -> Switches right content to 'new' */}
-                <button
-                  onClick={() => setActiveTab('new')}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#1C1B18] hover:bg-[#38342E] text-[#FAF8F5] text-[10px] tracking-[0.14em] uppercase font-semibold transition-all shadow-xs cursor-pointer"
+                {/* Primary Quick Action Button -> Navigate to new resource page */}
+                <Link
+                  href="/dashboard/resources/new"
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#1C1B18] hover:bg-[#38342E] text-[#FAF8F5] text-[10px] tracking-[0.14em] uppercase font-semibold transition-all shadow-xs"
                 >
                   <svg
                     className="w-3.5 h-3.5"
@@ -251,7 +262,7 @@ export default function Sidebar() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
                   <span>List Resource</span>
-                </button>
+                </Link>
               </div>
             ) : (
               /* Collapsed Avatar and Action */
@@ -262,10 +273,10 @@ export default function Sidebar() {
                 >
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
-                <button
-                  onClick={() => setActiveTab('new')}
+                <Link
+                  href="/dashboard/resources/new"
                   title="List New Resource"
-                  className="w-9 h-9 bg-[#1C1B18] hover:bg-[#38342E] text-[#FAF8F5] flex items-center justify-center rounded-xs transition-colors cursor-pointer"
+                  className="w-9 h-9 bg-[#1C1B18] hover:bg-[#38342E] text-[#FAF8F5] flex items-center justify-center rounded-xs transition-colors"
                 >
                   <svg
                     className="w-4 h-4"
@@ -276,11 +287,11 @@ export default function Sidebar() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                </button>
+                </Link>
               </div>
             )}
 
-            {/* Subnavigation Section -> Controls Right Content Area */}
+            {/* Subnavigation Section -> Nested Dashboard Routes */}
             <div className="space-y-1.5">
               {isOpen && (
                 <div className="px-2 pb-1 text-[9px] tracking-[0.22em] uppercase text-[#8A8276] font-semibold">
@@ -289,14 +300,14 @@ export default function Sidebar() {
               )}
               <nav className="space-y-1">
                 {subnavItems.map((item) => {
-                  const active = isDashboard ? activeTab === item.tabKey : false;
+                  const active = isActiveRoute(item.href);
 
                   return (
-                    <button
-                      key={item.tabKey}
-                      onClick={() => setActiveTab(item.tabKey)}
+                    <Link
+                      key={item.href}
+                      href={item.href}
                       title={!isOpen ? item.name : undefined}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-[11px] tracking-[0.08em] uppercase font-medium transition-all text-left cursor-pointer ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-[11px] tracking-[0.08em] uppercase font-medium transition-all text-left ${
                         isOpen ? 'rounded-xs' : 'justify-center rounded-xs px-2'
                       } ${
                         active
@@ -315,7 +326,7 @@ export default function Sidebar() {
                           )}
                         </div>
                       )}
-                    </button>
+                    </Link>
                   );
                 })}
               </nav>
@@ -454,9 +465,10 @@ export default function Sidebar() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setActiveTab('new')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-[#1C1B18] hover:bg-[#38342E] text-[#FAF8F5] text-[11px] tracking-[0.14em] uppercase font-semibold transition-all shadow-xs cursor-pointer"
+                <Link
+                  href="/dashboard/resources/new"
+                  onClick={closeMobileSidebar}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-[#1C1B18] hover:bg-[#38342E] text-[#FAF8F5] text-[11px] tracking-[0.14em] uppercase font-semibold transition-all shadow-xs"
                 >
                   <svg
                     className="w-4 h-4"
@@ -468,7 +480,7 @@ export default function Sidebar() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
                   <span>List New Resource</span>
-                </button>
+                </Link>
               </div>
 
               {/* Subnavigation Section */}
@@ -478,13 +490,14 @@ export default function Sidebar() {
                 </div>
                 <nav className="space-y-1">
                   {subnavItems.map((item) => {
-                    const active = isDashboard && activeTab === item.tabKey;
+                    const active = isActiveRoute(item.href);
 
                     return (
-                      <button
-                        key={item.tabKey}
-                        onClick={() => setActiveTab(item.tabKey)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-[11px] tracking-[0.1em] uppercase font-medium rounded-xs transition-all text-left cursor-pointer ${
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={closeMobileSidebar}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-[11px] tracking-[0.1em] uppercase font-medium rounded-xs transition-all text-left ${
                           active
                             ? 'bg-[#1C1B18] text-[#FAF8F5]'
                             : 'text-[#58534C] hover:text-[#1C1B18] hover:bg-[#EDE7DE]'
@@ -505,7 +518,7 @@ export default function Sidebar() {
                             {item.badge}
                           </span>
                         </div>
-                      </button>
+                      </Link>
                     );
                   })}
                 </nav>

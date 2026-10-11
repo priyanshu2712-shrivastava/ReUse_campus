@@ -21,3 +21,8 @@ yarn-error.log*
 .DS_Store
 *.pem
 Thumbs.db
+
+# User Uploads (Local Fallback Storage)
+/public/uploads/*
+!/public/uploads/.gitkeep
+

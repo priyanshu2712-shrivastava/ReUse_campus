@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { CAMPUS_CATEGORIES, CONDITIONS } from '@/lib/categories';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function EditResourcePage() {
   const { id } = useParams();
@@ -313,15 +314,10 @@ export default function EditResourcePage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-[11px] tracking-[0.14em] uppercase text-[#6B655C] mb-1">
-                Item Image URL (Optional)
-              </label>
-              <input
-                type="url"
+              <ImageUpload
                 value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full bg-white border border-[#E8E3DA] px-4 py-3 text-[14px] text-[#1C1B18] focus:outline-none focus:border-[#1C1B18]"
+                onChange={setImageUrl}
+                label="Item Photography (Direct Cloud & S3 Upload)"
               />
             </div>
           </div>
